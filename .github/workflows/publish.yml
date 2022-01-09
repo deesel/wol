@@ -19,9 +19,12 @@ jobs:
       id: set_version
       with:
         script: |
-          console.log(context)
+          const version = context.ref.split('/')[2].replace(/^v/, '')
+          core.setOutput('version', version)
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: deesel/wol:${GITHUB_REF_NAME##v}
+        tags: |
+          deesel/wol:latest
+          deesel/wol:${{steps.set_version.outputs.version}}
