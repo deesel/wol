@@ -14,8 +14,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Set version
+      uses: actions/github-script@v4
+      id: set_version
+      with:
+        script: |
+          console.log(context)
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: deesel/wol:${{ github.ref_name }}
+        tags: deesel/wol:${GITHUB_REF_NAME##v}
