@@ -8,7 +8,7 @@ import (
 	l "github.com/deesel/wol/internal/logger"
 )
 
-const version = "1.0.0"
+const version = "1.1.0"
 
 func main() {
 	var configFile string
