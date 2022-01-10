@@ -8,25 +8,32 @@ import (
 	"github.com/mdlayher/raw"
 )
 
+// ErrInvalidMAC represents invalid MAC address error
 var ErrInvalidMAC = errors.New("invalid mac address")
 
-type WOLType string
+// Type can be one of "ethernet" or "udp"
+type Type string
 
 const (
-	Ethernet WOLType = "ethernet"
-	UDP      WOLType = "udp"
+	// Ethernet type is used to encapsulate WoL magic packet in Ethernet frame
+	Ethernet Type = "ethernet"
+	// UDP type is used to encapsulate WoL magic packet in UDP datagram
+	UDP Type = "udp"
 )
 
-const WOLEtherType = 0x0842
+// EtherType value used in Ethernet frame for WoL
+const EtherType = 0x0842
 
+// WOL holds configuration for the service
 type WOL struct {
-	Type      WOLType
+	Type      Type
 	MAC       net.HardwareAddr
 	IP        net.IP
 	Port      int
 	Interface string
 }
 
+// NewEther creates ethernet-encapsulated WoL instance
 func NewEther(mac net.HardwareAddr, iface string) (*WOL, error) {
 	if len(mac) != 6 {
 		return nil, ErrInvalidMAC
@@ -39,6 +46,7 @@ func NewEther(mac net.HardwareAddr, iface string) (*WOL, error) {
 	}, nil
 }
 
+// NewUDP creates udp-encapsulated WoL instance
 func NewUDP(mac net.HardwareAddr, ip net.IP, port int) (*WOL, error) {
 	if len(mac) != 6 {
 		return nil, ErrInvalidMAC
@@ -84,7 +92,7 @@ func (w *WOL) sendEthernet() error {
 		return err
 	}
 
-	c, err := raw.ListenPacket(iface, WOLEtherType, nil)
+	c, err := raw.ListenPacket(iface, EtherType, nil)
 	if err != nil {
 		return err
 	}
@@ -93,7 +101,7 @@ func (w *WOL) sendEthernet() error {
 	f := &ethernet.Frame{
 		Destination: w.MAC,
 		Source:      iface.HardwareAddr,
-		EtherType:   WOLEtherType,
+		EtherType:   EtherType,
 		Payload:     w.createMagicPacket(),
 	}
 
@@ -110,6 +118,7 @@ func (w *WOL) sendEthernet() error {
 	return nil
 }
 
+// Send sends WoL magic packet
 func (w *WOL) Send() error {
 	switch w.Type {
 	case Ethernet:

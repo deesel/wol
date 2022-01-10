@@ -32,7 +32,7 @@ func accessLog(next http.Handler) http.Handler {
 		sw := newStatusResponseWriter(w)
 
 		defer func() {
-			l.Get().Infow("HTTP request",
+			l.New().Logger().Infow("HTTP request",
 				"host", r.Host,
 				"duration", fmt.Sprint(time.Since(start)),
 				"status", sw.statusCode,
@@ -73,7 +73,7 @@ func handleError(next http.Handler) http.Handler {
 				}
 
 				w.WriteHeader(statusCode)
-				l.Get().Error(message)
+				l.New().Logger().Error(message)
 				json.NewEncoder(w).Encode(map[string]interface{}{"error": message})
 			}
 		}()

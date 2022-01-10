@@ -11,29 +11,32 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// API holds configuration for API server
 type API struct {
 	Address string
 	Port    int
 	Auth    bool
-	APIKeys []APIKey
+	APIKeys []Key
 }
 
+// New creates new API server instance
 func New(c *config.Config) *API {
 	api := &API{
 		Address: c.Server.Address,
 		Port:    c.Server.Port,
 		Auth:    c.Auth.Enabled,
-		APIKeys: []APIKey{},
+		APIKeys: []Key{},
 	}
 
 	for _, key := range c.Auth.APIKeys {
-		api.APIKeys = append(api.APIKeys, APIKey(key.Key))
+		api.APIKeys = append(api.APIKeys, Key(key.Key))
 	}
 
 	return api
 }
 
-func (a *API) Run() {
+// Run runs API server instance
+func (a *API) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.Use(accessLog)
@@ -46,12 +49,12 @@ func (a *API) Run() {
 
 	router.HandleFunc("/", a.handleWOL).Methods("POST")
 
-	http.ListenAndServe(fmt.Sprintf("%s:%d", a.Address, a.Port), router)
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", a.Address, a.Port), router)
 }
 
 func (a *API) handleWOL(wr http.ResponseWriter, req *http.Request) {
 	var data struct {
-		Type      wol.WOLType
+		Type      wol.Type
 		MAC       string
 		IP        string
 		Port      int
@@ -61,6 +64,18 @@ func (a *API) handleWOL(wr http.ResponseWriter, req *http.Request) {
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		panic(err)
+	}
+
+	if data.Type == "" {
+		data.Type = wol.UDP
+	}
+
+	if data.IP == "" {
+		data.IP = "255.255.255.255"
+	}
+
+	if data.Port == 0 {
+		data.Port = 9
 	}
 
 	mac, err := net.ParseMAC(data.MAC)

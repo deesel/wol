@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-type APIKey string
+// Key represents API key value
+type Key string
 
 func (a *API) isAuthorized(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func (a *API) isAuthorized(next http.Handler) http.Handler {
 			panic(ErrInvalidAuthHeader)
 		}
 
-		apiKey := APIKey(authHeader[0][len("Bearer "):])
+		apiKey := Key(authHeader[0][len("Bearer "):])
 		found := false
 
 		for _, key := range a.APIKeys {
