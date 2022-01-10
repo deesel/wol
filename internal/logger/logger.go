@@ -5,12 +5,19 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var instance *zap.SugaredLogger
+// Logger represents logger instance
+type Logger struct {
+	engine *zap.SugaredLogger
+	config *zap.Config
+}
 
-func New(level string) (*zap.SugaredLogger, error) {
+var instance *Logger
+
+// New returns new logger instance
+func New() *Logger {
 	if instance == nil {
 		config := zap.Config{
-			Level:       zap.NewAtomicLevelAt(getLevel(level)),
+			Level:       zap.NewAtomicLevelAt(zapcore.InfoLevel),
 			Development: false,
 			Sampling: &zap.SamplingConfig{
 				Initial:    100,
@@ -38,17 +45,29 @@ func New(level string) (*zap.SugaredLogger, error) {
 
 		l, err := config.Build()
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 
-		instance = l.Sugar()
+		instance = &Logger{
+			engine: l.Sugar(),
+			config: &config,
+		}
 	}
 
-	return instance, nil
+	return instance
 }
 
-func Get() *zap.SugaredLogger {
-	return instance
+// Logger returns logger instance engine
+func (l *Logger) Logger() *zap.SugaredLogger {
+	return New().engine
+}
+
+// SetLevel sets logging level. Available options are "debug", "info", "warn", "error", "fatal", "panic". If different value is passed as argument, info level is used by default. Returns logger instance engine.
+func (l *Logger) SetLevel(level string) *zap.SugaredLogger {
+	logLevel := getLevel(level)
+	instance := New()
+	instance.config.Level.SetLevel(logLevel)
+	return instance.engine
 }
 
 func getLevel(level string) zapcore.Level {

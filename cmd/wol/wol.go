@@ -8,7 +8,7 @@ import (
 	l "github.com/deesel/wol/internal/logger"
 )
 
-const VERSION = "1.0.0"
+const version = "1.0.0"
 
 func main() {
 	var configFile string
@@ -18,12 +18,8 @@ func main() {
 	flag.StringVar(&logLevel, "log", "info", "logging level")
 	flag.Parse()
 
-	logger, err := l.New(logLevel)
-	if err != nil {
-		panic(err)
-	}
-
-	logger.Infof("Starting WOL version: %s", VERSION)
+	logger := l.New().SetLevel(logLevel)
+	logger.Infof("Starting WOL version: %s", version)
 	logger.Debugf("Parsing configuration file: %s", configFile)
 
 	cfg, err := config.New(configFile)
@@ -31,6 +27,9 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	logger.Info("Running API server")
-	api.New(cfg).Run()
+	logger.Infof("Running API server, listening on: %s:%d", cfg.Server.Address, cfg.Server.Port)
+	err = api.New(cfg).Run()
+	if err != nil {
+		logger.Fatal(err)
+	}
 }
