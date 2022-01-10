@@ -1,5 +1,7 @@
 # wol
 
+[![Go Doc](https://godoc.org/github.com/deesel/wol?status.svg)](https://godoc.org/github.com/deesel/wol) ![Build status](https://github.com/deesel/wol/actions/workflows/build.yml/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/deesel/wol)](https://goreportcard.com/badge/github.com/deesel/wol)
+
 `wol` is a simple http service that emits [Wake-on-LAN](https://en.wikipedia.org/wiki/Wake-on-LAN) (WoL) messages (a.k.a. magic packets).
 
 You may ask yourself why to complicate such a simple thing as calling [`ether-wake`](https://linux.die.net/man/8/ether-wake) with HTTP API layer? The motivation behind this tool is that it is hard to reliably deliver broadcast packets in some environments like docker. For example if you run [Home Assistant](https://www.home-assistant.io/) in docker container it is hard to use [wake on lan](https://www.home-assistant.io/integrations/wake_on_lan/) integration. In order to send broadcast packets from docker container you need to use host networking, which may not be desirable for each container. One solution could be to isolate WoL functionality into a dedicated single-purpose container connected to host network, which would be operated using HTTP API. And thus `wol` was born...

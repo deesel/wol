@@ -38,7 +38,7 @@ var defaults map[string]interface{} = map[string]interface{}{
 	"auth.enabled":   false,
 }
 
-// New creates new configuration instance composed of default values overriden by values specified in configuration file
+// New creates new configuration instance composed of default values overridden by values specified in configuration file
 func New(file string) (*Config, error) {
 	c := &Config{}
 	v := viper.New()
